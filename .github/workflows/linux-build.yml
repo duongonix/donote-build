@@ -1,0 +1,35 @@
+name: Build Tauri App Linux
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout code
+      - uses: actions/checkout@v3
+
+      # Node.js setup
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      # Rust setup (Tauri dùng Rust)
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+
+      # Install dependencies
+      - run: npm install
+
+      # Build Tauri Linux app
+      - run: npm run tauri build
+
+      # Upload artifact
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tauri-linux
+          path: src-tauri/target/release/bundle/
