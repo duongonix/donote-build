@@ -10,18 +10,20 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      # Cấu hình nếu cần thiết, ví dụ biến môi trường cho Tauri
       RUST_LOG: info
 
     steps:
+      # Checkout code
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20' # dùng version Node phù hợp với dự án
+          node-version: '20'
 
+      # Install Rust
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
@@ -29,17 +31,35 @@ jobs:
           profile: minimal
           override: true
 
-      - name: Install dependencies
+      # Install Linux system dependencies for Tauri
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libglib2.0-dev \
+            libgtk-3-dev \
+            libgdk-pixbuf2.0-dev \
+            libgio2.0-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            curl \
+            build-essential
+
+      # Install npm dependencies and build frontend
+      - name: Install npm dependencies
         run: |
           npm install
-          npm run build # build frontend nếu bạn dùng framework như React/Vue/Svelte
+          npm run build
 
+      # Install Tauri CLI
       - name: Install Tauri CLI
-        run: cargo install tauri-cli --version 2.7.2 # chỉnh version theo cần thiết
+        run: cargo install tauri-cli@2.7.1
 
+      # Build Tauri App
       - name: Build Tauri App
         run: cargo tauri build --release
 
+      # Upload build artifacts
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
