@@ -3,7 +3,7 @@ name: Build Tauri App Multi-Platform
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:
+  workflow_dispatch: # chạy thủ công
 
 jobs:
   windows:
@@ -11,7 +11,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
-        with: node-version: 18
+        with:
+          node-version: 18
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
@@ -27,7 +28,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
-        with: node-version: 18
+        with:
+          node-version: 18
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
@@ -38,12 +40,13 @@ jobs:
           name: tauri-linux
           path: src-tauri/target/release/bundle/
 
-  macos-ios:
+  macos:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
-        with: node-version: 18
+        with:
+          node-version: 18
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
@@ -51,5 +54,64 @@ jobs:
       - run: npm run tauri build
       - uses: actions/upload-artifact@v3
         with:
-          name: tauri-macos-ios
+          name: tauri-macos
           path: src-tauri/target/release/bundle/
+
+  android:
+    runs-on: ubuntu-latest
+    env:
+      ANDROID_HOME: ${{ runner.temp }}/android-sdk
+      PATH: ${{ runner.temp }}/android-sdk/emulator:${{ runner.temp }}/android-sdk/tools:${{ runner.temp }}/android-sdk/tools/bin:${{ runner.temp }}/android-sdk/platform-tools:$PATH
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+
+      # Cài Android SDK
+      - name: Setup Android SDK
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 33
+          arch: x86_64
+          force-avd-creation: true
+
+      - run: npm install
+      - run: npm run tauri android
+      - uses: actions/upload-artifact@v3
+        with:
+          name: tauri-android
+          path: src-tauri/target/release/bundle/android/
+
+  ios:
+    runs-on: macos-latest
+    env:
+      CERTIFICATE_BASE64: ${{ secrets.IOS_CERTIFICATE_BASE64 }}
+      CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+      PROVISION_PROFILE_BASE64: ${{ secrets.IOS_PROVISION_PROFILE_BASE64 }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+
+      - run: npm install
+
+      # Giải mã certificate & provisioning profile
+      - run: |
+          echo "$CERTIFICATE_BASE64" | base64 --decode > ios_cert.p12
+          echo "$PROVISION_PROFILE_BASE64" | base64 --decode > profile.mobileprovision
+
+      # Build iOS với tauri-mobile
+      - run: npm run tauri ios -- --signing-cert ios_cert.p12 --provisioning-profile profile.mobileprovision
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: tauri-ios
+          path: src-tauri/target/release/bundle/ios/
