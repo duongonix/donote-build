@@ -1,0 +1,55 @@
+name: Build Tauri App Multi-Platform
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with: node-version: 18
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - run: npm install
+      - run: npm run tauri build
+      - uses: actions/upload-artifact@v3
+        with:
+          name: tauri-windows
+          path: src-tauri/target/release/bundle/windows/
+
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with: node-version: 18
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - run: npm install
+      - run: npm run tauri build
+      - uses: actions/upload-artifact@v3
+        with:
+          name: tauri-linux
+          path: src-tauri/target/release/bundle/
+
+  macos-ios:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with: node-version: 18
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - run: npm install
+      - run: npm run tauri build
+      - uses: actions/upload-artifact@v3
+        with:
+          name: tauri-macos-ios
+          path: src-tauri/target/release/bundle/
