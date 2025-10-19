@@ -1,50 +1,57 @@
-name: Build Tauri Linux
+name: Build Tauri App (Linux)
 
 on:
   push:
-    branches: [ main ]
-  workflow_dispatch:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
-  linux:
+  build-linux:
+    name: Build on Ubuntu (Linux)
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout code
-      - uses: actions/checkout@v3
+      # Checkout source code
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      # Node.js setup
-      - uses: actions/setup-node@v3
+      # Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
 
-      # Rust setup (Tauri cần Rust)
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
+      # Setup Rust
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
 
-      # Cài các thư viện hệ thống cần cho Linux
-      - name: Install Linux dependencies
+      # ✅ Install Linux dependencies required by Tauri
+      - name: Install system dependencies
         run: |
           sudo apt update
           sudo apt install -y \
-            libgtk-3-dev \
             libglib2.0-dev \
+            libgtk-3-dev \
             libwebkit2gtk-4.0-dev \
             pkg-config \
             libssl-dev \
             libgdk-pixbuf2.0-dev \
-            curl \
-            build-essential
+            build-essential \
+            curl
 
-      # Cài npm dependencies
-      - run: npm install
+      # Install npm dependencies
+      - name: Install NPM dependencies
+        run: npm install
 
-      # Build Tauri Linux
-      - run: npm run tauri build
+      # Build Tauri App
+      - name: Build Tauri App
+        run: npm run tauri build
 
-      # Upload artifact (bản build)
-      - uses: actions/upload-artifact@v4
+      # ✅ Upload build artifacts (AppImage, deb, etc.)
+      - name: Upload Linux build artifacts
+        uses: actions/upload-artifact@v4
         with:
-          name: tauri-linux
-          path: src-tauri/target/release/bundle/
+          name: tauri-linux-build
+          path: |
+            src-tauri/target/release/bundle/
