@@ -13,17 +13,17 @@ jobs:
       RUST_LOG: info
 
     steps:
-      # Checkout code
+      # 1️⃣ Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Setup Node.js
+      # 2️⃣ Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20'
 
-      # Install Rust
+      # 3️⃣ Install Rust
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
@@ -31,7 +31,7 @@ jobs:
           profile: minimal
           override: true
 
-      # Install Linux system dependencies for Tauri
+      # 4️⃣ Install Linux system dependencies for Tauri
       - name: Install system dependencies
         run: |
           sudo apt-get update
@@ -44,21 +44,21 @@ jobs:
             curl \
             build-essential
 
-      # Install npm dependencies and build frontend
+      # 5️⃣ Install npm dependencies and build frontend
       - name: Install npm dependencies
         run: |
           npm install
           npm run build
 
-      # Install Tauri CLI
+      # 6️⃣ Install Tauri CLI from GitHub (fix skip_stapling bug)
       - name: Install Tauri CLI
-        run: cargo install tauri-cli@2.7.1
+        run: cargo install --git https://github.com/tauri-apps/tauri tauri-cli
 
-      # Build Tauri App
+      # 7️⃣ Build Tauri App
       - name: Build Tauri App
         run: cargo tauri build --release
 
-      # Upload build artifacts
+      # 8️⃣ Upload build artifacts
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
