@@ -2,56 +2,46 @@ name: Build Tauri App (Linux)
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
-    branches: [main]
 
 jobs:
-  build-linux:
-    name: Build on Ubuntu (Linux)
+  build:
     runs-on: ubuntu-latest
+    env:
+      # Cấu hình nếu cần thiết, ví dụ biến môi trường cho Tauri
+      RUST_LOG: info
 
     steps:
-      # Checkout source code
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Setup Node.js
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v3
         with:
-          node-version: 20
+          node-version: '20' # dùng version Node phù hợp với dự án
 
-      # Setup Rust
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
 
-      # ✅ Install Linux dependencies required by Tauri
-      - name: Install system dependencies
+      - name: Install dependencies
         run: |
-          sudo apt update
-          sudo apt install -y \
-            libglib2.0-dev \
-            libgtk-3-dev \
-            libwebkit2gtk-4.0-dev \
-            pkg-config \
-            libssl-dev \
-            libgdk-pixbuf2.0-dev \
-            build-essential \
-            curl
+          npm install
+          npm run build # build frontend nếu bạn dùng framework như React/Vue/Svelte
 
-      # Install npm dependencies
-      - name: Install NPM dependencies
-        run: npm install
+      - name: Install Tauri CLI
+        run: cargo install tauri-cli --version 2.7.2 # chỉnh version theo cần thiết
 
-      # Build Tauri App
       - name: Build Tauri App
-        run: npm run tauri build
+        run: cargo tauri build --release
 
-      # ✅ Upload build artifacts (AppImage, deb, etc.)
-      - name: Upload Linux build artifacts
-        uses: actions/upload-artifact@v4
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
         with:
           name: tauri-linux-build
-          path: |
-            src-tauri/target/release/bundle/
+          path: src-tauri/target/release/bundle
