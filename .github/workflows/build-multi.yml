@@ -3,7 +3,7 @@ name: Build Tauri App Multi-Platform
 on:
   push:
     branches: [ main ]
-  workflow_dispatch: # chạy thủ công
+  workflow_dispatch:
 
 jobs:
   windows:
@@ -18,7 +18,7 @@ jobs:
           toolchain: stable
       - run: npm install
       - run: npm run tauri build
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: tauri-windows
           path: src-tauri/target/release/bundle/windows/
@@ -35,7 +35,7 @@ jobs:
           toolchain: stable
       - run: npm install
       - run: npm run tauri build
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: tauri-linux
           path: src-tauri/target/release/bundle/
@@ -52,7 +52,7 @@ jobs:
           toolchain: stable
       - run: npm install
       - run: npm run tauri build
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: tauri-macos
           path: src-tauri/target/release/bundle/
@@ -67,18 +67,15 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-
-      # Setup Android SDK & Emulator
       - name: Setup Android SDK
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 33
           arch: x86_64
           force-avd-creation: true
-
       - run: npm install
       - run: npm run tauri android
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: tauri-android
           path: src-tauri/target/release/bundle/android/
@@ -97,18 +94,12 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-
       - run: npm install
-
-      # Giải mã certificate & provisioning profile
       - run: |
           echo "$CERTIFICATE_BASE64" | base64 --decode > ios_cert.p12
           echo "$PROVISION_PROFILE_BASE64" | base64 --decode > profile.mobileprovision
-
-      # Build iOS
       - run: npm run tauri ios -- --signing-cert ios_cert.p12 --provisioning-profile profile.mobileprovision
-
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: tauri-ios
           path: src-tauri/target/release/bundle/ios/
