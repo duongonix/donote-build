@@ -56,7 +56,7 @@ jobs:
 
       # 7️⃣ Build Tauri App
       - name: Build Tauri App
-        run: cargo tauri build --release
+        run: cargo tauri build -- --release
 
       # 8️⃣ Upload build artifacts
       - name: Upload artifact
