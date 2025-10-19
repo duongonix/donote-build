@@ -1,4 +1,4 @@
-name: Build Tauri App Linux
+name: Build Tauri Linux
 
 on:
   push:
@@ -8,6 +8,7 @@ on:
 jobs:
   linux:
     runs-on: ubuntu-latest
+
     steps:
       # Checkout code
       - uses: actions/checkout@v3
@@ -17,18 +18,32 @@ jobs:
         with:
           node-version: 18
 
-      # Rust setup (Tauri dùng Rust)
+      # Rust setup (Tauri cần Rust)
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
 
-      # Install dependencies
+      # Cài các thư viện hệ thống cần cho Linux
+      - name: Install Linux dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y \
+            libgtk-3-dev \
+            libglib2.0-dev \
+            libwebkit2gtk-4.0-dev \
+            pkg-config \
+            libssl-dev \
+            libgdk-pixbuf2.0-dev \
+            curl \
+            build-essential
+
+      # Cài npm dependencies
       - run: npm install
 
-      # Build Tauri Linux app
+      # Build Tauri Linux
       - run: npm run tauri build
 
-      # Upload artifact
+      # Upload artifact (bản build)
       - uses: actions/upload-artifact@v4
         with:
           name: tauri-linux
