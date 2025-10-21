@@ -1,12 +1,13 @@
-name: "build-tauri"
+name: "release-tauri"
 
 on:
   push:
-    branches:
-      - main  # chạy khi bạn push lên main
+    tags:
+      - "v*"          # khi bạn push tag v1.0.0
+      - "app-v*"      # hoặc app-v1.0.0
 
 jobs:
-  build:
+  publish-tauri:
     permissions:
       contents: write
     strategy:
@@ -33,7 +34,7 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
 
-      # 🧰 Cài các thư viện cần thiết cho Linux (Tauri v2)
+      # 🧰 Cài thư viện cần cho Linux (Tauri v2)
       - name: Install dependencies (Linux only)
         if: matrix.platform == 'ubuntu-22.04'
         run: |
@@ -53,23 +54,15 @@ jobs:
       - name: Install frontend dependencies
         run: npm install
 
-      # 🏗️ Build Tauri app
-      - name: Build Tauri app
+      # 🏗️ Build và publish Tauri
+      - name: Build and release Tauri app
         uses: tauri-apps/tauri-action@v0
-        id: tauri_build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          args: ${{ matrix.args }}
+          tagName: ${{ github.ref_name }}
+          releaseName: "App ${{ github.ref_name }}"
+          releaseBody: "🚀 Tự động build bởi GitHub Actions"
           releaseDraft: false
-          tagName: ""
-          releaseName: ""
-          releaseBody: ""
-
-      # 📦 Upload artifacts (file build)
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.platform }}-build
-          path: |
-            src-tauri/target/release/bundle/
+          prerelease: false
+          args: ${{ matrix.args }}
