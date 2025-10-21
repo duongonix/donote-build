@@ -2,6 +2,8 @@ name: "release-tauri"
 
 on:
   push:
+    branches:
+      - main
     tags:
       - "v*"          # khi bạn push tag v1.0.0
       - "app-v*"      # hoặc app-v1.0.0
