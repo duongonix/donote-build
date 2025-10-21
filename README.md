@@ -60,7 +60,7 @@ It focuses on simplicity, privacy, and performance — giving you a clean worksp
 ## 🚀 Installation
 
 ### Using prebuilt binaries
-Download the latest version from the [Releases](https://github.com/yourusername/donote/releases) page.
+Download the latest version from the [Releases](https://github.com/duongonix/donote-app/releases) page.
 
 ### Build from source
 ```bash
